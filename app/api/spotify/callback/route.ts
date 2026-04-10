@@ -1,13 +1,25 @@
 import { sql } from "@/lib/db"
 import { inngest } from "@/inngest/client"
+import { cookies } from "next/headers"
+import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function GET(req: NextRequest) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${req.nextUrl.protocol}//${req.nextUrl.host}`
   const code = req.nextUrl.searchParams.get("code")
-  const userId = req.nextUrl.searchParams.get("state")
+  const stateParam = req.nextUrl.searchParams.get("state")
 
-  if (!code || !userId) {
-    return Response.redirect("http://localhost:3000/dashboard?spotify=error")
+  const cookieStore = await cookies()
+  const storedState = cookieStore.get("spotify_oauth_state")?.value
+  cookieStore.delete("spotify_oauth_state")
+
+  if (!code || !stateParam || !storedState || stateParam !== storedState) {
+    return NextResponse.redirect(`${appUrl}/dashboard?spotify=error`)
+  }
+
+  const userId = storedState.split(":")[0]
+  if (!userId) {
+    return NextResponse.redirect(`${appUrl}/dashboard?spotify=error`)
   }
 
   // Exchange code for tokens
@@ -27,7 +39,7 @@ export async function GET(req: NextRequest) {
   })
 
   if (!res.ok) {
-    return Response.redirect("http://localhost:3000/dashboard?spotify=error")
+    return NextResponse.redirect(`${appUrl}/dashboard?spotify=error`)
   }
 
   const tokens = (await res.json()) as {
@@ -53,5 +65,5 @@ export async function GET(req: NextRequest) {
     data: { userId },
   })
 
-  return Response.redirect("http://localhost:3000/dashboard?spotify=connected")
+  return NextResponse.redirect(`${appUrl}/dashboard?spotify=connected`)
 }

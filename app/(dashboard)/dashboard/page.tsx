@@ -7,6 +7,7 @@ import { SyncButton } from "@/components/sync-button"
 import { SteamConnect } from "@/components/steam-connect"
 import { DashboardReportCard } from "@/components/dashboard-report-card"
 import { EmailSettings } from "@/components/email-settings"
+import { DisconnectButton } from "@/components/disconnect-button"
 import Link from "next/link"
 
 export default async function DashboardPage({
@@ -175,11 +176,10 @@ export default async function DashboardPage({
             <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
             Spotify
           </h2>
-          {!spotifyConnected && (
-            <a href="/api/spotify/connect" className="text-xs underline text-muted-foreground">
-              Connect Spotify
-            </a>
-          )}
+          {spotifyConnected
+            ? <DisconnectButton service="Spotify" endpoint="/api/spotify/disconnect" />
+            : <a href="/api/spotify/connect" className="text-xs underline text-muted-foreground">Connect Spotify</a>
+          }
         </div>
 
         {spotifyConnected ? (
@@ -241,7 +241,10 @@ export default async function DashboardPage({
             <span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />
             Steam
           </h2>
-          {!steamConnected && <SteamConnect />}
+          {steamConnected
+            ? <DisconnectButton service="Steam" endpoint="/api/steam/disconnect" />
+            : <SteamConnect />
+          }
         </div>
 
         {steamConnected ? (
