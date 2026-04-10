@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { SyncButton } from "@/components/sync-button"
 import { SteamConnect } from "@/components/steam-connect"
 import { DashboardReportCard } from "@/components/dashboard-report-card"
+import { EmailSettings } from "@/components/email-settings"
 import Link from "next/link"
 
 export default async function DashboardPage({
@@ -29,6 +30,7 @@ export default async function DashboardPage({
     recentPlays,
     topTracks,
     topArtists,
+    userRows,
     steamRows,
     steamRecent,
     steamTop,
@@ -72,6 +74,7 @@ export default async function DashboardPage({
         )
       ORDER BY rank LIMIT 8
     `,
+    sql`SELECT email FROM users WHERE id = ${userId}`,
     sql`SELECT user_id FROM steam_config WHERE user_id = ${userId}`,
     sql`
       SELECT app_id, name, playtime_2weeks, playtime_forever
@@ -93,6 +96,7 @@ export default async function DashboardPage({
 
   const spotifyConnected = spotifyRows.length > 0
   const steamConnected = steamRows.length > 0
+  const currentEmail = (userRows as { email: string | null }[])[0]?.email ?? null
   const commitData = commitWeeks as { week: string; count: number }[]
   const commitDailyData = commitDays as { day: string; count: number }[]
   const report = (latestReport as { content: string; report_date: string; created_at: string }[])[0] ?? null
@@ -121,6 +125,9 @@ export default async function DashboardPage({
       {spotify === "error" && (
         <p className="text-sm text-red-400">Spotify connection failed. Try again.</p>
       )}
+
+      {/* Email settings */}
+      <EmailSettings currentEmail={currentEmail} />
 
       {/* Weekly Report Section */}
       <DashboardReportCard initialReport={report} />
