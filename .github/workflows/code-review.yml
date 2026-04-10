@@ -1,0 +1,20 @@
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: tolera1ed01/CodeReviewBot@main
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
